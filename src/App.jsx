@@ -9,6 +9,7 @@ import Btn from "./components/btn";
 import LoginPage from "./components/LoginPage";
 import TermsPolicyPage from "./components/Termsploicy";
 import Notes from "./components/Notes";
+import MindTrainingPage from "./components/MindTrainingPage";
 import About from "./components/About";
 import { Toaster } from "react-hot-toast";
 
@@ -98,6 +99,17 @@ function App() {
           element={user ? <Notes user={user} /> : <Navigate to="/login" replace />} 
         />
         
+        <Route
+          path="/mind-training"
+          element={
+            user ? (
+              <MindTrainingPage user={user} onSignOut={handleSignOut} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
         <Route
           path="/"
           element={

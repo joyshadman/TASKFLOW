@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, ChevronDown, Menu, X, Home, Book, Info } from "lucide-react";
+import { LogOut, ChevronDown, Menu, X, Home, Book, Info, Brain } from "lucide-react";
 
 const Navbar = ({ user, onSignOut }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +10,7 @@ const Navbar = ({ user, onSignOut }) => {
 
   const navItems = [
     { name: "Home", path: "/", icon: <Home size={18} /> },
+    { name: "Mind Training", path: "/mind-training", icon: <Brain size={18} /> },
     { name: "Notes", path: "/notes", icon: <Book size={18} /> },
     { name: "About", path: "/About", icon: <Info size={18} /> },
   ];

@@ -15,7 +15,7 @@ const LoginPage = ({ setUser }) => {
     try {
       const provider = new GoogleAuthProvider();
       const auth = getAuth(app);
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(augth, provider);
       const user = result.user;
 
       const userRef = doc(db, "users", user.uid);
