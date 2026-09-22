@@ -141,14 +141,16 @@ This mirrors the existing security model for todos, notes, and folders.
 ### Route
 
 - Path: `/mind-training`
-- Protected route in `App.jsx`, redirects to `/login` if unauthenticated.
-- `MindTrainingPage` renders its own `Navbar` (same as Notes and About).
+- Protected route in `App.jsx`, redirects to `/login` if unauthenticated (only
+  after the Firebase auth state has resolved — never during initialization).
 
 ### Navigation
 
-- Added to `src/components/navbar.jsx` in the `navItems` array.
+- Added to the Dock's nav items in `src/components/Dock.jsx`.
 - `Brain` icon from `lucide-react`.
-- Appears in both desktop pill nav and mobile fullscreen menu.
+- The Dock is the application's primary navigation; `MindTrainingPage` does not
+  render its own navbar.
+- Content uses `pb-40` so the Dock never covers the page bottom.
 
 ### Page Structure
 

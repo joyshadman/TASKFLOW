@@ -9,30 +9,48 @@ change.
 
 ## Current Goal
 
-- Mind Training feature — fully implemented with Firebase Realtime Database persistence, custom questions, history, and progress tracking.
+- "Smoky Violet & Velvet" theme + global UI polish + Dock jitter fix +
+  watermark removal + full Keep-style Notes system + performance,
+  with context docs updated.
 
 ## Completed
 
-- Mind Training feature:
-  - Daily training page with 5 default reflection questions
-  - Firebase Realtime Database persistence at `users/{uid}/mindTraining/{date}`
-  - One entry per day, create-or-update via `set()`
-  - Local calendar date keys (`YYYY-MM-DD`, UTC-safe)
-  - Answer merging to preserve historical question text
-  - Progress card with animated bar and count
-  - Save states: idle → saving → saved → idle, with error handling
-  - History section (newest-first) with view modal
-  - Custom questions: add, edit, delete, enable/disable toggle
-  - Custom questions persisted at `users/{uid}/mindTrainingQuestions/{id}`
-  - Custom question modal (reuses NamingModal glass design)
-  - Delete confirmation modal (reuses Notes/DeleteModal)
-  - Navigation: Brain icon added to navbar (desktop + mobile)
-  - Route: `/mind-training` (protected, requires auth)
-  - Full responsive design (desktop + mobile, no horizontal scroll)
-  - Reuses existing Firebase config, auth, design system, and conventions
-  - context/mind-training.md created with full implementation docs
-  - context/architecture.md filled in with actual project stack
-  - AGENTS.md created with project conventions
+- **Theme — Smoky Violet & Velvet (`#0E0C13` / accent `#BF5AF2`):**
+  - Mechanical retheme sweep across all `src/*.{js,jsx}` (orange/blue tokens →
+    violet) via `retheme.mjs`; verified no `orange|f97316|249,115,22` remains.
+  - `src/index.css` rewritten with `:root` tokens, lavender scrollbars,
+    selection color, `.no-scrollbar`, and a global `prefers-reduced-motion`
+    block; `index.html` gained a matching `theme-color` meta.
+- **Dock jitter fixed (root cause):** magnification is now scale-only inside
+  fixed-size slots using pre-measured static centers (measured once, re-measured
+  on resize/item change, throttled 150ms). The old code read
+  `getBoundingClientRect()` per pointer frame while icon widths were
+  spring-animated (feedback loop) — removed. Reduced-motion disables it.
+- **Watermarks / branding removed:** `Watermark.jsx` deleted (imports cleaned
+  from LoginPage, AccountPage, MindTrainingPage, btn.jsx). `About.jsx` rewritten
+  product-focused (no author bio/socials). Dead files removed:
+  `Notes/SidebarItem.jsx`, `Notes/EditorToolbar.jsx`.
+- **Notes — full Keep-style system:** one RTDB listener pair per user;
+  views All/Pinned/Archived/Trash + counts; folders (flat, create via
+  `NamingModal`); debounced (200ms) client-side search; CSS-column masonry;
+  memoized `NoteCard`; `NoteComposer` (expand → title/body/color/pin/folder);
+  `NoteEditor` with local title/body state + contentEditable, 700ms debounced
+  autosave with Saving…/Saved/failed indicator, labels, colors, pin/archive/
+  trash/restore/delete; optimistic mutations everywhere; trash purges only via
+  `DeleteModal`; legacy notes render fine.
+- **Performance:** `src/utils/performance.js` (`debounce`, `throttle`,
+  `useDebouncedValue`); editor typing never re-renders the grid; single
+  listener sets; no per-keystroke DB writes; global reduced-motion CSS.
+- **Lint/build:** fixed noteColorValues case-collision (renamed `noteColors.js`
+  → `noteColorValues.js` so `./NoteColors` can't resolve case-insensitively);
+  fixed btn.jsx exhaustive-deps (useCallback-wrapped `playSound`/`stopSound`/
+  `fetchWeather`). `npm run lint` → **0 errors, 0 warnings**. `npm run build`
+  passes (pre-existing chunk-size warning only). Vite preview returned 200 for
+  `/`, `/login`, `/notes`, `/account`, `/mind-training`, `/about`, `/terms`,
+  `/privacy`, unknown paths.
+- **Context docs updated:** ui-context (theme tokens, Dock mechanism, Notes UI,
+  a11y), architecture (note schema, Notes feature, performance model,
+  invariants), and this tracker.
 
 ## In Progress
 
@@ -48,24 +66,34 @@ change.
 
 ## Architecture Decisions
 
-- **Realtime Database over Firestore for Mind Training**: The established
-  user-data convention in this project is Firebase Realtime Database.
-  Todos, notes, folders, and location all live under `users/{uid}/...` in
-  RDB using `ref`/`onValue`/`set`/`update`/`remove`. Firestore was
-  initialized for the login profile doc only. Following the existing
-  pattern avoids introducing a second storage style.
-- **`Date.now()` timestamps**: Matches the convention used in todos
-  (`createdAt: Date.now()`) and notes (`updatedAt: new Date().toISOString()`).
-  RDB entries use `Date.now()` for consistency with the todo pattern.
-- **Answers as object map keyed by questionId**: Matches the existing RDB
-  pattern (objects keyed by child ID) and enables targeted updates.
-- **Merge on save for today's entry**: `{ ...existing.answers, ...newAnswers }`
-  ensures disabled/deleted questions' answers are preserved in historical
-  entries.
-- **`onValue` on full `mindTraining` subtree**: Consistent with how notes
-  and todos load data. Per-user subtree is small (daily entries).
+- **React Bits Dock is the primary navigation**: implemented in
+  `src/components/Dock.jsx`. The old top navbar is removed.
+- **Dock magnification is scale-only on static slot centers** — fixes the
+  hover jitter without disabling the animation.
+- **Keep-style Notes on the existing RTDB model**: task said "Firestore", but
+  the established architecture stores user content in Realtime Database under
+  `users/{uid}`; notes live at `users/{uid}/notes` with the new schema
+  (content/content_enc/pinned/archived/inTrash/labels/folder/timestamps).
+- **One shared `LoginCard`**: the sign-in UI + Google popup flow live in a
+  single component rendered by both the `/login` page and `LoginModal`. The auth
+  `onAuthStateChanged` listener is the single source of truth — components do
+  not set auth state themselves.
+- **Loader until auth resolves**: `App.jsx` keeps `initializing` true until the
+  first auth callback, preventing flicker and premature redirects.
+- **Debounced autosave (700ms) + local editor state**: no RTDB write per
+  keystroke and no grid re-render while typing.
+- **SPA fallback in vercel.json**: `/(.*)` → `/index.html` so BrowserRouter
+  routes survive direct loads and refreshes on Vercel.
+- **`npx` note**: there is no `typecheck` script — the project is JS (no
+  TypeScript config); verification is `npm run lint` + `npm run build`.
+- **Case-sensitive filenames matter on Windows dev**: two modules differing only
+  by case in one folder (`noteColors.js` vs `NoteColors.jsx`) confuses the
+  resolver; use distinct names.
 
 ## Session Notes
 
-- Build passes; lint has only pre-existing `motion` unused-var false positives.
-- Existing pages (Home, Notes, About) are untouched.
+- `npm run lint` passes (0 errors, 0 warnings — the previous 2 btn.jsx warnings
+  are gone). `npm run build` passes.
+- Vite preview confirmed every route returns the SPA shell (HTTP 200).
+- Branding sweep (rg/grep for `made by|joyshadman|joy shadman|reactbits|
+  watermark`) returns nothing in `src`.

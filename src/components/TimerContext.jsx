@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, useRef } from "react";
+import React, { createContext, useState, useContext, useRef } from "react";
 
 const TimerContext = createContext();
 
@@ -37,4 +37,5 @@ export const TimerProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTimer = () => useContext(TimerContext);

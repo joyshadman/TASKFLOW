@@ -30,7 +30,7 @@ const CustomQuestionModal = ({ isOpen, initialValue, onClose, onSubmit }) => {
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-md bg-[#111]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)]"
+          className="relative w-full max-w-md bg-[#1C1726]/80 backdrop-blur-2xl border border-[#D8B4FE]/15 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)]"
         >
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xl font-black uppercase tracking-tighter text-white">
@@ -48,7 +48,7 @@ const CustomQuestionModal = ({ isOpen, initialValue, onClose, onSubmit }) => {
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && value.trim() && onSubmit(value.trim())}
               placeholder="What did I learn today?"
-              className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 outline-none focus:border-orange-500/50 transition-all text-lg font-medium text-white placeholder:text-gray-600"
+              className="w-full bg-white/5 border border-[#D8B4FE]/15 rounded-2xl py-4 px-6 outline-none focus:border-[#BF5AF2]/50 transition-all text-lg font-medium text-white placeholder:text-gray-600"
             />
           </div>
 
@@ -62,7 +62,7 @@ const CustomQuestionModal = ({ isOpen, initialValue, onClose, onSubmit }) => {
             <button
               disabled={!value.trim()}
               onClick={() => onSubmit(value.trim())}
-              className="flex-1 py-4 bg-orange-600 rounded-2xl text-sm font-bold uppercase tracking-widest text-white hover:bg-orange-500 disabled:opacity-30 disabled:grayscale transition-all shadow-lg shadow-orange-600/20 flex items-center justify-center gap-2"
+              className="flex-1 py-4 bg-[#BF5AF2] rounded-2xl text-sm font-bold uppercase tracking-widest text-white hover:bg-[#BF5AF2] disabled:opacity-30 disabled:grayscale transition-all shadow-lg shadow-[#BF5AF2]/20 flex items-center justify-center gap-2"
             >
               {initialValue ? "Save Question" : "Add Question"} <Check size={16} />
             </button>

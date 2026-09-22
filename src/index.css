@@ -1,21 +1,37 @@
 @import "tailwindcss";
 
-body {
-  background-color: black;
+/* Smoky Violet & Velvet — design tokens */
+:root {
+  --bg-page: #0E0C13;
+  --bg-surface: rgba(28, 23, 38, 0.58);
+  --border: rgba(216, 180, 254, 0.15);
+  --text-primary: #F5F3FF;
+  --text-secondary: #A78BFA;
+  --accent: #BF5AF2;
+  --accent-glow: #BF5AF2;
+  color-scheme: dark;
 }
 
-.container {
-  margin: 0 auto;
-  width: 1200px;
+body {
+  background-color: #0E0C13;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(191, 90, 242, 0.3);
+  color: #ffffff;
 }
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(216, 180, 254, 0.2);
   border-radius: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(249, 115, 22, 0.4); }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(191, 90, 242, 0.5); }
 
 /* Target the entire browser scrollbar */
 ::-webkit-scrollbar {
@@ -31,22 +47,43 @@ body {
 
 /* The Thumb (the moving part) */
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05); /* Very faint white */
+  background: rgba(216, 180, 254, 0.15); /* Subtle lavender */
   backdrop-filter: blur(10px);           /* Glassy blur */
   border-radius: 100px;                  /* Fully rounded pill shape */
   border: 2px solid transparent;         /* Creates padding effect */
   background-clip: content-box;          /* Makes the thumb smaller than the track */
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
-/* Hover effect: Glows when you interact with it */
+/* Hover effect: Lavender glow when you interact with it */
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.4);   /* Orange glow on hover */
+  background: rgba(191, 90, 242, 0.45);
   background-clip: content-box;
 }
 
 /* Firefox Support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(216, 180, 254, 0.25) transparent;
+}
+
+/* Hide scrollbars for horizontal pill rows (no overflowbars on mobile) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Respect users who prefer reduced motion app-wide */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

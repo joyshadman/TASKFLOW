@@ -11,22 +11,22 @@ const TermsPolicyPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050507] text-white selection:bg-orange-500/30 p-4 md:p-12 flex justify-center items-center relative overflow-hidden">
+        <div className="min-h-screen bg-[#0E0C13] text-white selection:bg-[#BF5AF2]/30 p-4 md:p-12 flex justify-center items-center relative overflow-hidden">
             
             {/* --- Dynamic Background Orbs --- */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-600/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full" />
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#BF5AF2]/10 blur-[120px] rounded-full animate-pulse" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-[#BF5AF2]/10 blur-[120px] rounded-full" />
             </div>
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-4xl bg-white/[0.02] backdrop-blur-[50px] rounded-[3rem] p-8 md:p-16 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-white/10 relative z-10 overflow-hidden"
+                className="w-full max-w-4xl bg-[#1C1726]/60 backdrop-blur-[50px] rounded-[3rem] p-8 md:p-16 shadow-[0_32px_64px_rgba(0,0,0,0.5)] border border-[#D8B4FE]/15 relative z-10 overflow-hidden"
             >
                 {/* Decorative Internal Glow */}
-                <div className="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 blur-[100px] rounded-full -mr-20 -mt-20 pointer-events-none" />
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[#BF5AF2]/5 blur-[100px] rounded-full -mr-20 -mt-20 pointer-events-none" />
 
                 <div className="relative z-10">
                     {/* Header */}
@@ -34,12 +34,12 @@ const TermsPolicyPage = () => {
                         <motion.div 
                             initial={{ y: -10, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6"
+                            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#BF5AF2]/10 border border-[#BF5AF2]/20 text-[#BF5AF2] text-[10px] font-black uppercase tracking-[0.2em] mb-6"
                         >
                             <ShieldCheck size={14} /> Legal Documentation
                         </motion.div>
                         <h1 className="text-5xl md:text-6xl font-black tracking-tighter mb-4">
-                            Terms & <span className="text-orange-500">Privacy.</span>
+                            Terms & <span className="text-[#BF5AF2]">Privacy.</span>
                         </h1>
                         <p className="text-white/30 text-sm font-medium">
                             Last Revised: February {new Date().getFullYear()}
@@ -56,7 +56,7 @@ const TermsPolicyPage = () => {
                             viewport={{ once: true }}
                         >
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-orange-500">
+                                <div className="p-2.5 bg-white/5 rounded-xl border border-[#D8B4FE]/15 text-[#BF5AF2]">
                                     <Terminal size={20} />
                                 </div>
                                 <h2 className="text-2xl font-bold tracking-tight">Terms of Use</h2>
@@ -72,7 +72,7 @@ const TermsPolicyPage = () => {
                                     "Right to modify service architecture without prior notice."
                                 ].map((item, idx) => (
                                     <li key={idx} className="flex gap-3 text-sm text-white/70">
-                                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#BF5AF2] shrink-0" />
                                         {item}
                                     </li>
                                 ))}
@@ -87,7 +87,7 @@ const TermsPolicyPage = () => {
                             viewport={{ once: true }}
                         >
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-white/5 rounded-xl border border-white/10 text-blue-500">
+                                <div className="p-2.5 bg-white/5 rounded-xl border border-[#D8B4FE]/15 text-[#A78BFA]">
                                     <Lock size={20} />
                                 </div>
                                 <h2 className="text-2xl font-bold tracking-tight">Data Privacy</h2>
@@ -118,7 +118,7 @@ const TermsPolicyPage = () => {
                     </div>
 
                     {/* --- Footer Action --- */}
-                    <div className="mt-16 pt-10 border-t border-white/5 flex flex-col items-center gap-8">
+                    <div className="mt-16 pt-10 border-t border-[#D8B4FE]/10 flex flex-col items-center gap-8">
                         <p className="text-white/20 text-[11px] max-w-md text-center leading-relaxed">
                             Questions regarding these policies can be directed to the developer via the official connect channels found on the About page.
                         </p>

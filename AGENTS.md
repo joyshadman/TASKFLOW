@@ -27,6 +27,19 @@ persistence.
   Realtime Database operations, timestamps as `Date.now()`.
 - All user content stays scoped under the signed-in user's `uid`.
 - Never weaken Firestore or Realtime Database security.
+- Wait for Firebase auth state to resolve before protected-route redirects or
+  user-scoped Firebase queries (App renders a loader until it does).
+- Do not initialize Firebase more than once — always import the shared
+  instances from `src/Config/firebaseConfig.js`.
+- The React Bits Dock (`src/components/Dock.jsx`) is the application's primary
+  navigation. Do not bring the old top navbar back.
+- Use the Firestore `firestore` instance for the Firestore profile doc — never
+  `doc(db, ...)` against the Realtime Database instance.
+- No visible personal branding or watermarks anywhere. `About.jsx` is
+  product-focused (no author bio/social links). Do not re-add a watermark.
+- All new feature code must reuse `src/utils/performance.js`
+  (`debounce`/`throttle`/`useDebouncedValue`) for anything debounced or
+  throttled — do not hand-roll inline timers.
 
 ## Auth
 
@@ -40,20 +53,43 @@ persistence.
 - `npm run build` — Production build
 - `npm run lint` — ESLint
 
+## Notes (Keep-style)
+
+- Lives at `users/{uid}/notes` (RTDB), keyed by `String(Date.now())`. Schema:
+  `title`, `content` (HTML) + `content_enc` (legacy mirror), `color` (`null` or
+  a key from `Notes/noteColorValues.js`), `pinned`, `archived`, `inTrash`,
+  `labels` (string[]), `folder` (flat folder id), `createdAt`, `updatedAt`.
+- `src/components/Notes.jsx` owns one `onValue` listener pair (notes + folders)
+  per user. All mutations are optimistic (local state first, then RTDB, toast
+  on failure). Trash purges only via `DeleteModal`; folders create via
+  `NamingModal`.
+- The editor keeps title/body in local state; autosave is debounced 700ms;
+  search is debounced 200ms. Never write to RTDB per keystroke and never let
+  keystroke state re-render the whole grid.
+- `Notes.jsx` uses an instance named `Notes` (page) + `Notes/` folder
+  (`NoteCard`, `NoteComposer`, `NoteEditor`, `NamingModal`, `DeleteModal`,
+  `NoteColors`, `notes-utils`). Keep that structure.
+
 ## Conventions
 
-- **New pages**: Create under `src/components/`, register a protected route
-  in `src/App.jsx`, pass `user` and `onSignOut` as props.
+- **New pages**: Create under `src/components/`, register a route in
+  `src/App.jsx` (protected routes get a `user` prop).
 - **Navigation**: Add items to the `navItems` array in
-  `src/components/navbar.jsx` with a `lucide-react` icon.
-- **Route pattern**: Pages that render their own Navbar (Notes, About,
-  Mind Training) handle it internally rather than in `App.jsx`.
+  `src/components/Dock.jsx` with a `lucide-react` icon. The Dock is rendered
+  globally in `App.jsx`; pages do not render their own navbar.
+- **Login UI**: Reuse the shared `LoginCard` from `src/components/LoginPage.jsx`
+  (page + `LoginModal`). Do not create duplicate login components.
 - **Subcomponents**: Groups of related components live in their own folder
-  (e.g. `src/components/MindTraining/`, `src/components/Notes/`).
-- **Design**: Dark glassmorphism — `bg-[#050507]`, orange accent
-  (`#f97316` / `orange-500`), `bg-white/[0.02]`, `border-white/10`,
+  (e.g. `src/components/MindTraining/`, `src/components/Notes/`). Pure data /
+  helper modules that are not components go in lower-kebab files
+  (e.g. `Notes/notes-utils.js`, `Notes/noteColorValues.js`) — avoid two files
+  differing only by case in one folder (Windows resolver collisions).
+- **Design**: Dark "Smoky Violet & Velvet" glassmorphism — page `#0E0C13`
+  (`bg-[#0E0C13]`), accent `#BF5AF2` (used sparingly), surfaces
+  `bg-[#1C1726]/60`, borders `border-[#D8B4FE]/15`, muted text `#A78BFA`,
   `rounded-[2rem]`–`[3rem]`, `backdrop-blur`. Use `framer-motion` for
-  entrance/exit animations.
+  entrance/exit animations. Honor `prefers-reduced-motion` (global CSS block +
+  `useReducedMotion` where custom animation runs continuously, e.g. Dock).
 - **Modals**: Follow the `NamingModal` pattern (fixed overlay, glass card,
   `AnimatePresence`). Reuse `DeleteModal` from Notes for confirmations.
 - **Toast notifications**: Use `react-hot-toast` (`toast.success` /

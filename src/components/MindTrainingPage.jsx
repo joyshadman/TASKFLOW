@@ -8,14 +8,12 @@ import {
   Brain, Plus, Trash2, Pencil, X, Check, Eye, Calendar, CloudOff, Sparkles
 } from "lucide-react";
 
-import Navbar from "./navbar";
-import Watermark from "./Watermark";
 import DeleteModal from "./Notes/DeleteModal";
 import CustomQuestionModal from "./MindTraining/CustomQuestionModal";
 import { DEFAULT_QUESTIONS } from "./MindTraining/defaultQuestions";
 import { localDateKey, formatDisplayDate } from "./MindTraining/dateUtils";
 
-const MindTrainingPage = ({ user, onSignOut }) => {
+const MindTrainingPage = ({ user }) => {
   const todayKey = localDateKey();
 
   const [entries, setEntries] = useState({});
@@ -168,34 +166,32 @@ const MindTrainingPage = ({ user, onSignOut }) => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-[#050507]">
-        <ClipLoader color="#f97316" size={50} />
+      <div className="h-screen flex items-center justify-center bg-[#0E0C13]">
+        <ClipLoader color="#BF5AF2" size={50} />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen text-white overflow-x-hidden bg-[#050507] selection:bg-orange-500/30">
+    <div className="relative min-h-screen text-white overflow-x-hidden bg-[#0E0C13] selection:bg-[#BF5AF2]/30">
       {/* BACKGROUND ORBS */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-orange-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#BF5AF2]/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#BF5AF2]/10 blur-[120px]" />
       </div>
 
-      <Navbar user={user} onSignOut={onSignOut} />
-
-      <main className="max-w-2xl mx-auto p-4 relative z-10 pb-40">
+      <main className="mx-auto max-w-2xl p-4 relative z-10 pb-40">
         {/* HERO */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-24 text-center"
+          className="mt-8 text-center"
         >
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/20 mb-6">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-[#BF5AF2] to-[#BF5AF2] rounded-2xl flex items-center justify-center shadow-2xl shadow-[#BF5AF2]/20 mb-6">
             <Brain className="text-white" size={30} />
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
-            Mind <span className="text-orange-500">Training</span>
+            Mind <span className="text-[#BF5AF2]">Training</span>
           </h1>
           <p className="mt-4 text-white/40 font-medium max-w-md mx-auto leading-relaxed">
             Train your mind every day. Take a few minutes to reflect, be honest, and improve.
@@ -204,7 +200,7 @@ const MindTrainingPage = ({ user, onSignOut }) => {
 
         {/* TODAY HEADER */}
         <div className="mt-12 mb-6">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">Today's Training</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BF5AF2]">Today's Training</p>
           <p className="text-xl font-black mt-1">{formatDisplayDate(todayKey)}</p>
         </div>
 
@@ -240,8 +236,6 @@ const MindTrainingPage = ({ user, onSignOut }) => {
         <HistorySection dates={historyDates} entries={entries} onView={setHistoryModalDate} />
       </main>
 
-      <Watermark />
-
       {/* MODALS */}
       <AnimatePresence>
         {historyModalDate && entries[historyModalDate] && (
@@ -274,12 +268,12 @@ const MindTrainingPage = ({ user, onSignOut }) => {
 // --- REMAINING SUB-COMPONENTS ---
 
 const ProgressCard = ({ answered, total, progress }) => (
-  <div className="mb-8 p-6 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem]">
+  <div className="mb-8 p-6 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem]">
     <div className="flex items-center justify-between mb-3">
       <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.25em] text-white/40">
-        <Sparkles size={12} className="text-orange-400" /> Today's Progress
+        <Sparkles size={12} className="text-[#BF5AF2]" /> Today's Progress
       </span>
-      <span className="text-xs font-black text-orange-400">
+      <span className="text-xs font-black text-[#BF5AF2]">
         {answered} / {total} answered
       </span>
     </div>
@@ -288,7 +282,7 @@ const ProgressCard = ({ answered, total, progress }) => (
         initial={{ width: 0 }}
         animate={{ width: `${progress}%` }}
         transition={{ duration: 0.8, ease: "circOut" }}
-        className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full"
+        className="h-full bg-gradient-to-r from-[#BF5AF2] to-[#BF5AF2] rounded-full"
       />
     </div>
     <p className="mt-2 text-right text-[10px] font-black uppercase tracking-widest text-white/20">
@@ -302,10 +296,10 @@ const QuestionCard = ({ index, question, value, onChange }) => (
     initial={{ opacity: 0, y: 12 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: index * 0.05 }}
-    className="p-6 bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[2rem]"
+    className="p-6 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem]"
   >
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-7 h-7 shrink-0 rounded-full bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400 text-xs font-black">
+      <div className="w-7 h-7 shrink-0 rounded-full bg-[#BF5AF2]/15 border border-[#BF5AF2]/30 flex items-center justify-center text-[#BF5AF2] text-xs font-black">
         {index + 1}
       </div>
       <label className="text-sm font-semibold tracking-tight text-white/80 leading-snug">
@@ -317,7 +311,7 @@ const QuestionCard = ({ index, question, value, onChange }) => (
       onChange={(e) => onChange(e.target.value)}
       placeholder="Write a few honest lines..."
       rows={3}
-      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-4 outline-none focus:border-orange-500/40 transition-all text-white placeholder:text-white/20 resize-y min-h-[96px]"
+      className="w-full bg-[#1C1726]/60 border border-[#D8B4FE]/15 rounded-2xl p-4 outline-none focus:border-[#BF5AF2]/40 transition-all text-white placeholder:text-white/20 resize-y min-h-[96px]"
     />
   </motion.div>
 );
@@ -331,7 +325,7 @@ const SaveBar = ({ status, error, onSave }) => (
       className={`w-full py-5 rounded-[2rem] font-black text-lg tracking-tight flex items-center justify-center gap-3 transition-all shadow-xl ${
         status === "saved"
           ? "bg-green-500 text-black shadow-green-500/20"
-          : "bg-orange-600 text-black shadow-orange-600/20 hover:bg-orange-500"
+          : "bg-[#BF5AF2] text-black shadow-[#BF5AF2]/20 hover:bg-[#BF5AF2]"
       } ${status === "saving" ? "opacity-60 cursor-not-allowed" : ""}`}
     >
       {status === "saving" ? (
@@ -381,7 +375,7 @@ const CustomQuestionsSection = ({ customQuestions, onAdd, onEdit, onToggle, onDe
         <h2 className="text-xl font-black tracking-tight">Custom Questions</h2>
         <button
           onClick={onAdd}
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 bg-orange-500/5 px-5 py-3 rounded-full border border-orange-500/20 active:scale-90 transition-all backdrop-blur-md hover:bg-orange-500/10"
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#BF5AF2] bg-[#BF5AF2]/5 px-5 py-3 rounded-full border border-[#BF5AF2]/20 active:scale-90 transition-all backdrop-blur-md hover:bg-[#BF5AF2]/10"
         >
           <Plus size={14} /> Add Custom Question
         </button>
@@ -396,18 +390,18 @@ const CustomQuestionsSection = ({ customQuestions, onAdd, onEdit, onToggle, onDe
           {list.map(([id, q]) => (
             <div
               key={id}
-              className="p-5 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex items-center gap-4"
+              className="p-5 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem] flex items-center gap-4"
             >
               <button
                 onClick={() => onToggle(id, Boolean(q.enabled))}
                 title={q.enabled ? "Enabled — click to disable" : "Disabled — click to enable"}
                 className={`w-12 h-7 rounded-full border transition-all relative shrink-0 ${
-                  q.enabled ? "bg-orange-500/30 border-orange-500/50" : "bg-white/5 border-white/10"
+                  q.enabled ? "bg-[#BF5AF2]/30 border-[#BF5AF2]/50" : "bg-white/5 border-[#D8B4FE]/15"
                 }`}
               >
                 <span
                   className={`absolute top-1 w-5 h-5 rounded-full transition-all ${
-                    q.enabled ? "left-6 bg-orange-500 shadow-[0_0_10px_#f97316]" : "left-1 bg-white/30"
+                    q.enabled ? "left-6 bg-[#BF5AF2] shadow-[0_0_10px_#BF5AF2]" : "left-1 bg-white/30"
                   }`}
                 />
               </button>
@@ -420,7 +414,7 @@ const CustomQuestionsSection = ({ customQuestions, onAdd, onEdit, onToggle, onDe
               </p>
               <button
                 onClick={() => onEdit(id, q.question)}
-                className="p-2.5 text-white/30 hover:text-orange-400 transition-colors"
+                className="p-2.5 text-white/30 hover:text-[#BF5AF2] transition-colors"
                 title="Edit question"
               >
                 <Pencil size={16} />
@@ -458,10 +452,10 @@ const HistorySection = ({ dates, entries, onView }) => (
             <button
               key={d}
               onClick={() => onView(d)}
-              className="w-full p-5 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex items-center justify-between gap-4 hover:border-white/20 hover:bg-white/[0.04] transition-all group text-left"
+              className="w-full p-5 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem] flex items-center justify-between gap-4 hover:border-[#D8B4FE]/25 hover:bg-[#1C1726]/60 transition-all group text-left"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <Calendar size={18} className="shrink-0 text-white/20 group-hover:text-orange-400 transition-colors" />
+                <Calendar size={18} className="shrink-0 text-white/20 group-hover:text-[#BF5AF2] transition-colors" />
                 <div className="min-w-0">
                   <p className="font-black tracking-tight truncate">{formatDisplayDate(d)}</p>
                   <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mt-1">
@@ -469,7 +463,7 @@ const HistorySection = ({ dates, entries, onView }) => (
                   </p>
                 </div>
               </div>
-              <span className="flex items-center gap-1.5 shrink-0 text-[10px] font-black uppercase tracking-widest text-orange-500 bg-orange-500/5 px-4 py-2 rounded-full border border-orange-500/20">
+              <span className="flex items-center gap-1.5 shrink-0 text-[10px] font-black uppercase tracking-widest text-[#BF5AF2] bg-[#BF5AF2]/5 px-4 py-2 rounded-full border border-[#BF5AF2]/20">
                 <Eye size={12} /> View
               </span>
             </button>
@@ -496,11 +490,11 @@ const HistoryModal = ({ date, entry, onClose }) => {
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="relative w-full max-w-lg bg-[#111]/90 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto custom-scrollbar"
+        className="relative w-full max-w-lg bg-[#1C1726]/90 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto custom-scrollbar"
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500 mb-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BF5AF2] mb-1">
               Training Entry
             </p>
             <h3 className="text-xl font-black tracking-tight text-white">{formatDisplayDate(date)}</h3>

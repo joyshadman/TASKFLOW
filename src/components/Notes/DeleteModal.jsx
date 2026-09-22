@@ -22,7 +22,7 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, itemName, itemType }) => {
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="relative w-full max-w-sm bg-[#111]/90 backdrop-blur-3xl border border-red-500/20 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(220,38,38,0.15)]"
+          className="relative w-full max-w-sm bg-[#1C1726]/90 backdrop-blur-3xl border border-red-500/20 rounded-[2.5rem] p-8 shadow-[0_32px_64px_rgba(220,38,38,0.15)]"
         >
           <div className="flex flex-col items-center text-center">
             {/* Danger Icon with Glow */}

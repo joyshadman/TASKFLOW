@@ -1,8 +1,8 @@
 // src/components/Btn.jsx
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { db } from "../Config/firebaseConfig";
 import { ref, set, onValue, remove, update, get } from "firebase/database";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import { 
@@ -12,17 +12,12 @@ import {
 } from "react-icons/fi";
 import { Quote } from "lucide-react"; 
 
-// Saved Imports
-import NamingModal from "./Notes/NamingModal";
-import DeleteModal from "./Notes/DeleteModal";
-
 import ambSound from "../assets/amb.mp3";
 import clickSoundFile from "../assets/click.mp3";
 import errorSoundFile from "../assets/error.mp3";
-import Watermark from "./Watermark";
 
 const CATEGORIES = {
-  Work: "text-blue-400 bg-blue-400/10 border-blue-400/20 shadow-[0_0_15px_-5px_rgba(96,165,250,0.3)]",
+  Work: "text-[#A78BFA] bg-blue-400/10 border-[#A78BFA]/20 shadow-[0_0_15px_-5px_rgba(96,165,250,0.3)]",
   Personal: "text-purple-400 bg-purple-400/10 border-purple-400/20 shadow-[0_0_15px_-5px_rgba(192,132,252,0.3)]",
   Urgent: "text-red-400 bg-red-400/10 border-red-400/20 shadow-[0_0_15px_-5px_rgba(248,113,113,0.4)]",
   General: "text-gray-400 bg-gray-400/10 border-gray-400/20 shadow-none"
@@ -52,43 +47,51 @@ const Btn = ({ user }) => {
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
 
-  const refs = { 
-    alarm: useRef(null), 
-    click: useRef(null), 
-    error: useRef(null) 
-  };
+  const alarmRef = useRef(null);
+  const clickRef = useRef(null);
+  const errorRef = useRef(null);
+  const refs = useMemo(() => ({ alarm: alarmRef, click: clickRef, error: errorRef }), []);
 
-  const playSound = (type) => {
-    const s = refs[type].current;
-    if (s) { s.pause(); s.currentTime = 0; s.play().catch(() => {}); }
-  };
+  const playSound = useCallback(
+    (type) => {
+      const s = refs[type].current;
+      if (s) { s.pause(); s.currentTime = 0; s.play().catch(() => {}); }
+    },
+    [refs]
+  );
 
-  const stopSound = (type) => {
-    const s = refs[type].current;
-    if (s) { s.pause(); s.currentTime = 0; }
-  };
+  const stopSound = useCallback(
+    (type) => {
+      const s = refs[type].current;
+      if (s) { s.pause(); s.currentTime = 0; }
+    },
+    [refs]
+  );
 
   const userPath = useMemo(() => user?.uid ? `users/${user.uid}/todos` : null, [user?.uid]);
   const locationPath = useMemo(() => user?.uid ? `users/${user.uid}/location` : null, [user?.uid]);
 
   // --- CORE WEATHER LOGIC ---
-  const fetchWeather = async (lat, lon, cityLabel = "Current", shouldSave = true) => {
-    setWeatherLoading(true);
-    try {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-      const data = await res.json();
-      setWeather({ ...data.current_weather, city: cityLabel });
+  const fetchWeather = useCallback(
+    async (lat, lon, cityLabel = "Current", shouldSave = true) => {
+      setWeatherLoading(true);
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+        const data = await res.json();
+        setWeather({ ...data.current_weather, city: cityLabel });
 
-      // Save to Firebase so it persists across sessions
-      if (shouldSave && locationPath) {
-        set(ref(db, locationPath), { lat, lon, cityLabel });
+        // Save to Firebase so it persists across sessions
+        if (shouldSave && locationPath) {
+          set(ref(db, locationPath), { lat, lon, cityLabel });
+        }
+      } catch {
+        console.log("Weather error");
+      } finally {
+        setWeatherLoading(false);
       }
-    } catch (e) {
-      console.log("Weather error");
-    } finally {
-      setWeatherLoading(false);
-    }
-  };
+    },
+    [locationPath]
+  );
 
   // Initial Location Setup: Priority: Firebase > Geolocation > Fallback
   useEffect(() => {
@@ -107,7 +110,7 @@ const Btn = ({ user }) => {
       }
     };
     initLocation();
-  }, [locationPath]);
+  }, [locationPath, fetchWeather]);
 
   // Fetch Motivation
   useEffect(() => {
@@ -119,7 +122,9 @@ const Btn = ({ user }) => {
           const parsed = JSON.parse(data.contents);
           setQuote({ text: parsed[0].q, author: parsed[0].a });
         }
-      } catch (e) { console.log("Quote fallback used"); }
+      } catch {
+        console.log("Quote fallback used");
+      }
     };
     fetchQuote();
   }, []);
@@ -187,7 +192,7 @@ const Btn = ({ user }) => {
     }, 1000);
 
     return () => clearInterval(ticker);
-  }, []);
+  }, [playSound]);
 
   const sortedList = useMemo(() => {
     return [...todoList].sort((a, b) => {
@@ -217,7 +222,9 @@ const Btn = ({ user }) => {
         });
       }
       setToDo("");
-    } catch (err) { playSound("error"); }
+    } catch {
+      playSound("error");
+    }
   };
 
   const handleStopAlarm = async (id) => {
@@ -260,7 +267,7 @@ const Btn = ({ user }) => {
     update(ref(db, `${userPath}/${item.id}`), { ongoing: next });
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-[#050507]"><ClipLoader color="#f97316" size={50} /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-[#0E0C13]"><ClipLoader color="#BF5AF2" size={50} /></div>;
 
   const stats = {
     total: todoList.length,
@@ -269,10 +276,10 @@ const Btn = ({ user }) => {
   };
 
   return (
-    <div className="relative min-h-screen text-white overflow-x-hidden bg-[#050507]">
+    <div className="relative min-h-screen text-white overflow-x-hidden bg-[#0E0C13]">
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-orange-500/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[#BF5AF2]/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[#BF5AF2]/10 blur-[120px]" />
       </div>
 
       <main className="max-w-2xl mx-auto p-4 relative z-10 pb-32">
@@ -291,10 +298,10 @@ const Btn = ({ user }) => {
         {!focusMode && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mt-24 p-8 bg-white/[0.02] border border-white/[0.05] rounded-[2.5rem] backdrop-blur-3xl text-center relative group">
-              <Quote className="absolute top-4 left-4 text-orange-500/20 group-hover:text-orange-500/40 transition-colors" size={32} />
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 p-8 bg-[#1C1726]/60 border border-[#D8B4FE]/10 rounded-[2.5rem] backdrop-blur-3xl text-center relative group">
+              <Quote className="absolute top-4 left-4 text-[#BF5AF2]/20 group-hover:text-[#BF5AF2]/40 transition-colors" size={32} />
               <p className="text-lg font-medium italic text-white/80 leading-relaxed mb-4">"{quote.text}"</p>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-orange-500">— {quote.author}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BF5AF2]">— {quote.author}</p>
             </motion.div>
 
             <WeatherCard weather={weather} loading={weatherLoading} onManualSearch={fetchWeather} />
@@ -303,20 +310,20 @@ const Btn = ({ user }) => {
               <ProgressRing percent={stats.percent} />
             </div>
             
-            <motion.form layout className="mt-12 mb-6 p-2 bg-white/[0.04] backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl" onSubmit={handleSubmit}>
+            <motion.form layout className="mt-12 mb-6 p-2 bg-[#1C1726]/60 backdrop-blur-2xl border border-[#D8B4FE]/15 rounded-[2.5rem] shadow-2xl" onSubmit={handleSubmit}>
               <div className="flex items-center gap-2 p-1">
                 <input value={toDo} onChange={(e) => setToDo(e.target.value)} placeholder="What's the mission?" className="flex-1 bg-transparent p-4 outline-none text-lg font-medium" />
-                <button type="submit" className="w-12 h-12 flex items-center justify-center bg-orange-500 rounded-full text-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-orange-500/20"><FiPlus size={24} /></button>
+                <button type="submit" className="w-12 h-12 flex items-center justify-center bg-[#BF5AF2] rounded-full text-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-[#BF5AF2]/20"><FiPlus size={24} /></button>
               </div>
               <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
                 {Object.keys(CATEGORIES).map(cat => (
-                  <button key={cat} type="button" onClick={() => setCategory(cat)} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${category === cat ? "bg-white/10 text-white border-white/20" : "border-transparent text-gray-500"}`}>{cat}</button>
+                  <button key={cat} type="button" onClick={() => setCategory(cat)} className={`whitespace-nowrap px-4 py-1.5 rounded-full text-[10px] font-black border transition-all ${category === cat ? "bg-white/10 text-white border-[#D8B4FE]/25" : "border-transparent text-gray-500"}`}>{cat}</button>
                 ))}
               </div>
             </motion.form>
 
             <div className="flex justify-end mb-4 pr-2">
-              <button onClick={() => { setIsSorting(true); playSound("click"); setTimeout(() => setIsSorting(false), 1000); }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-500 bg-orange-500/5 px-5 py-2.5 rounded-full border border-orange-500/20 active:scale-90 transition-all backdrop-blur-md">
+              <button onClick={() => { setIsSorting(true); playSound("click"); setTimeout(() => setIsSorting(false), 1000); }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#BF5AF2] bg-[#BF5AF2]/5 px-5 py-2.5 rounded-full border border-[#BF5AF2]/20 active:scale-90 transition-all backdrop-blur-md">
                 <FiZap className={isSorting ? "animate-spin" : ""} /> Magic Sort
               </button>
             </div>
@@ -330,9 +337,9 @@ const Btn = ({ user }) => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <BentoCard icon={<FiTarget />} label="Accuracy" val={stats.percent + "%"} color="text-orange-500" />
-              <BentoCard icon={<FiActivity />} label="Status" val="Secure" color="text-blue-400" />
-              <div className="col-span-2 p-6 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex flex-col justify-between">
+              <BentoCard icon={<FiTarget />} label="Accuracy" val={stats.percent + "%"} color="text-[#BF5AF2]" />
+              <BentoCard icon={<FiActivity />} label="Status" val="Secure" color="text-[#A78BFA]" />
+              <div className="col-span-2 p-6 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem] flex flex-col justify-between">
                 <FiAward className="text-purple-400" size={20} />
                 <p className="text-xs text-white/40 mt-4 font-medium leading-relaxed">End-to-End Security: <span className="text-white">Active</span>. Data is locked to your UID.</p>
               </div>
@@ -345,19 +352,19 @@ const Btn = ({ user }) => {
       <AnimatePresence>
         {timerModal.open && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[150] flex items-center justify-center p-6 backdrop-blur-3xl bg-black/60">
-            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="w-full max-w-sm bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-[3rem] p-10 shadow-2xl">
+            <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="w-full max-w-sm bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[3rem] p-10 shadow-2xl">
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-black">Set Timer</h3>
                 <button onClick={() => setTimerModal({ open: false })} className="p-2 text-white/30 hover:text-white transition-colors"><FiXCircle size={28}/></button>
               </div>
-              <input type="number" placeholder="00" className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-8 mb-8 text-center text-6xl font-black outline-none focus:border-orange-500/50" onChange={(e) => setTimerModal({...timerModal, input: e.target.value})} autoFocus />
+              <input type="number" placeholder="00" className="w-full bg-white/5 border border-[#D8B4FE]/15 rounded-[2rem] p-8 mb-8 text-center text-6xl font-black outline-none focus:border-[#BF5AF2]/50" onChange={(e) => setTimerModal({...timerModal, input: e.target.value})} autoFocus />
               <button onClick={async () => {
                 const mins = parseInt(timerModal.input);
                 if (mins && userPath) {
                   await update(ref(db, `${userPath}/${timerModal.id}`), { timerEnd: Date.now() + mins * 60000 });
                   setTimerModal({ open: false, id: null, input: "" });
                 }
-              }} className="w-full py-5 bg-orange-500 rounded-[1.5rem] font-black text-black text-lg shadow-lg shadow-orange-500/20">SET MISSION TIMER</button>
+              }} className="w-full py-5 bg-[#BF5AF2] rounded-[1.5rem] font-black text-black text-lg shadow-lg shadow-[#BF5AF2]/20">SET MISSION TIMER</button>
             </motion.div>
           </motion.div>
         )}
@@ -366,8 +373,6 @@ const Btn = ({ user }) => {
       <audio ref={refs.alarm} src={ambSound} loop />
       <audio ref={refs.click} src={clickSoundFile} />
       <audio ref={refs.error} src={errorSoundFile} />
-      <Toaster position="bottom-center" />
-      <Watermark />
     </div>
   );
 };
@@ -390,13 +395,15 @@ const WeatherCard = ({ weather, loading, onManualSearch }) => {
       } else {
         toast.error("City not found");
       }
-    } catch (err) { toast.error("Search failed"); }
+    } catch {
+      toast.error("Search failed");
+    }
   };
 
   const getWeatherIcon = (code) => {
     if (code <= 3) return <FiSun className="text-yellow-400" />;
     if (code <= 48) return <FiCloud className="text-gray-400" />;
-    if (code <= 67) return <FiCloudRain className="text-blue-400" />;
+    if (code <= 67) return <FiCloudRain className="text-[#A78BFA]" />;
     if (code <= 77) return <FiCloudSnow className="text-white" />;
     return <FiWind className="text-gray-300" />;
   };
@@ -408,21 +415,21 @@ const WeatherCard = ({ weather, loading, onManualSearch }) => {
           <motion.div 
             key="display" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
             onClick={() => setIsSearching(true)}
-            className="flex items-center justify-center gap-6 py-4 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] backdrop-blur-xl group hover:border-orange-500/30 transition-all cursor-pointer px-8 w-fit"
+            className="flex items-center justify-center gap-6 py-4 bg-[#1C1726]/60 border border-[#D8B4FE]/10 rounded-[2rem] backdrop-blur-xl group hover:border-[#BF5AF2]/30 transition-all cursor-pointer px-8 w-fit"
           >
-            {loading ? <ClipLoader size={14} color="#f97316" /> : (
+            {loading ? <ClipLoader size={14} color="#BF5AF2" /> : (
               <>
                 <div className="text-2xl">{getWeatherIcon(weather?.weathercode)}</div>
                 <div className="flex flex-col items-start">
                   <span className="text-xl font-black">{Math.round(weather?.temperature || 0)}°C</span>
-                  <span className="text-[8px] font-black uppercase text-orange-500 tracking-widest">{weather?.city || "Environment"}</span>
+                  <span className="text-[8px] font-black uppercase text-[#BF5AF2] tracking-widest">{weather?.city || "Environment"}</span>
                 </div>
                 <div className="h-6 w-[1px] bg-white/10" />
                 <div className="flex flex-col items-start pr-2">
                   <span className="text-sm font-bold">{weather?.windspeed || 0} <span className="text-[10px] opacity-40">km/h</span></span>
                   <span className="text-[8px] font-black uppercase text-white/20 tracking-widest">Wind</span>
                 </div>
-                <FiMapPin className="text-white/10 group-hover:text-orange-500 transition-colors" size={14} />
+                <FiMapPin className="text-white/10 group-hover:text-[#BF5AF2] transition-colors" size={14} />
               </>
             )}
           </motion.div>
@@ -430,10 +437,10 @@ const WeatherCard = ({ weather, loading, onManualSearch }) => {
           <motion.form 
             key="search" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
             onSubmit={handleManualSearch}
-            className="flex items-center gap-2 bg-white/[0.05] p-2 rounded-full border border-white/10 backdrop-blur-3xl"
+            className="flex items-center gap-2 bg-[#1C1726]/60 p-2 rounded-full border border-[#D8B4FE]/15 backdrop-blur-3xl"
           >
             <input autoFocus value={cityInput} onChange={(e) => setCityInput(e.target.value)} placeholder="Search city..." className="bg-transparent px-4 py-2 outline-none text-sm font-bold w-36" />
-            <button type="submit" className="p-2 bg-orange-500 text-black rounded-full hover:scale-105 active:scale-95 transition-all"><FiSearch size={16} /></button>
+            <button type="submit" className="p-2 bg-[#BF5AF2] text-black rounded-full hover:scale-105 active:scale-95 transition-all"><FiSearch size={16} /></button>
             <button type="button" onClick={() => setIsSearching(false)} className="p-2 text-white/30 hover:text-white"><FiXCircle size={16} /></button>
           </motion.form>
         )}
@@ -450,7 +457,7 @@ const ProgressRing = ({ percent = 0 }) => {
     <div className="relative w-32 h-32 flex items-center justify-center">
       <svg className="absolute w-full h-full -rotate-90">
         <circle cx="64" cy="64" r={radius} stroke="rgba(255,255,255,0.03)" strokeWidth="4" fill="transparent" />
-        <motion.circle cx="64" cy="64" r={radius} stroke="#f97316" strokeWidth="4" fill="transparent" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * percent) / 100 }} transition={{ duration: 1.5, ease: "circOut" }} />
+        <motion.circle cx="64" cy="64" r={radius} stroke="#BF5AF2" strokeWidth="4" fill="transparent" strokeDasharray={circumference} initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: circumference - (circumference * percent) / 100 }} transition={{ duration: 1.5, ease: "circOut" }} />
       </svg>
       <div className="text-center">
         <span className="text-2xl font-black block">{percent}%</span>
@@ -461,7 +468,7 @@ const ProgressRing = ({ percent = 0 }) => {
 };
 
 const BentoCard = ({ icon, label, val, color }) => (
-  <div className="p-6 bg-white/[0.02] backdrop-blur-3xl border border-white/10 rounded-[2rem] flex flex-col items-center justify-center text-center">
+  <div className="p-6 bg-[#1C1726]/60 backdrop-blur-3xl border border-[#D8B4FE]/15 rounded-[2rem] flex flex-col items-center justify-center text-center">
     <div className={`${color} text-xl mb-2`}>{icon}</div>
     <div className="text-lg font-black">{val}</div>
     <div className="text-[9px] font-black uppercase text-white/20 tracking-widest">{label}</div>
@@ -470,24 +477,24 @@ const BentoCard = ({ icon, label, val, color }) => (
 
 const SwipeableTask = ({ item, userPath, remaining, setToDo, setEditId, setCategory, setTimerModal, setFocusMode, playSound, onToggleOngoing }) => (
   <motion.div layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}>
-    <div className={`p-5 bg-white/[0.03] backdrop-blur-3xl border rounded-[2.2rem] flex items-center gap-4 transition-all duration-500 ${CATEGORIES[item.category || "General"]} ${item.completed ? "opacity-20 grayscale border-transparent" : "border-white/10 shadow-xl"}`}>
-      <input type="checkbox" checked={item.completed} onChange={() => { playSound("click"); update(ref(db, `${userPath}/${item.id}`), { completed: !item.completed }); }} className="w-6 h-6 rounded-full accent-orange-500 cursor-pointer" />
+    <div className={`p-5 bg-[#1C1726]/60 backdrop-blur-3xl border rounded-[2.2rem] flex items-center gap-4 transition-all duration-500 ${CATEGORIES[item.category || "General"]} ${item.completed ? "opacity-20 grayscale border-transparent" : "border-[#D8B4FE]/15 shadow-xl"}`}>
+      <input type="checkbox" checked={item.completed} onChange={() => { playSound("click"); update(ref(db, `${userPath}/${item.id}`), { completed: !item.completed }); }} className="w-6 h-6 rounded-full accent-[#BF5AF2] cursor-pointer" />
       <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { if (remaining > 0) setFocusMode(item.id); }}>
         <p className="text-base font-bold truncate tracking-tight">{item.TodoName}</p>
         <div className="flex items-center gap-2 mt-1">
             <span className="text-[9px] font-black uppercase opacity-40">{item.category}</span>
-            {remaining > 0 && <span className="text-[10px] font-mono text-orange-400 font-black animate-pulse">● {Math.floor(remaining/60)}:{(remaining%60).toString().padStart(2,'0')}</span>}
+            {remaining > 0 && <span className="text-[10px] font-mono text-[#BF5AF2] font-black animate-pulse">● {Math.floor(remaining/60)}:{(remaining%60).toString().padStart(2,'0')}</span>}
         </div>
         {item.ongoing && (
-          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.03] border border-orange-500/20 backdrop-blur-xl">
-            <FiRepeat size={11} className="text-orange-400" />
-            <span className="text-[9px] font-black uppercase tracking-wider text-orange-400">This Todo List is Ongoing</span>
+          <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1C1726]/60 border border-[#BF5AF2]/20 backdrop-blur-xl">
+            <FiRepeat size={11} className="text-[#BF5AF2]" />
+            <span className="text-[9px] font-black uppercase tracking-wider text-[#BF5AF2]">This Todo List is Ongoing</span>
           </div>
         )}
       </div>
       <div className="flex items-center gap-3">
-        <button onClick={() => onToggleOngoing(item)} title={item.ongoing ? "Ongoing — click to disable" : "Make ongoing"} className={`p-2 transition-colors ${item.ongoing ? "text-orange-400" : "text-white/30 hover:text-orange-400"}`}><FiRepeat size={18}/></button>
-        <button onClick={() => setTimerModal({ open: true, id: item.id, input: "" })} className="p-2 text-white/30 hover:text-orange-400 transition-colors"><FiClock size={18}/></button>
+        <button onClick={() => onToggleOngoing(item)} title={item.ongoing ? "Ongoing — click to disable" : "Make ongoing"} className={`p-2 transition-colors ${item.ongoing ? "text-[#BF5AF2]" : "text-white/30 hover:text-[#BF5AF2]"}`}><FiRepeat size={18}/></button>
+        <button onClick={() => setTimerModal({ open: true, id: item.id, input: "" })} className="p-2 text-white/30 hover:text-[#BF5AF2] transition-colors"><FiClock size={18}/></button>
         <button onClick={() => { setToDo(item.TodoName); setEditId(item.id); setCategory(item.category || "General"); window.scrollTo({top: 0, behavior: 'smooth'}); }} className="p-2 text-white/30 hover:text-white transition-colors"><FiEdit3 size={18}/></button>
         <button onClick={() => { remove(ref(db, `${userPath}/${item.id}`)); }} className="p-2 text-white/30 hover:text-red-500 transition-colors"><FiTrash2 size={18}/></button>
       </div>
@@ -496,11 +503,11 @@ const SwipeableTask = ({ item, userPath, remaining, setToDo, setEditId, setCateg
 );
 
 const FocusOverlay = ({ item, remaining, setFocusMode, stopAlarm, isRinging }) => (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-[#050507] flex flex-col items-center justify-center p-6 text-center">
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-[#0E0C13] flex flex-col items-center justify-center p-6 text-center">
     <button onClick={() => setFocusMode(null)} className="absolute top-10 right-10 p-4 text-white/20 hover:text-white transition-all"><FiXCircle size={40}/></button>
     <h2 className="text-white/40 uppercase tracking-[0.8em] text-xs mb-6 font-black">Deep Focus</h2>
     <h1 className="text-4xl md:text-6xl font-black mb-16 tracking-tighter px-4">{item?.TodoName}</h1>
-    <div className={`text-9xl font-black font-mono tracking-tighter tabular-nums ${isRinging ? "text-red-500 animate-bounce" : "text-orange-500"}`}>
+    <div className={`text-9xl font-black font-mono tracking-tighter tabular-nums ${isRinging ? "text-red-500 animate-bounce" : "text-[#BF5AF2]"}`}>
       {remaining > 0 ? `${Math.floor(remaining / 60)}:${(remaining % 60).toString().padStart(2, "0")}` : "00:00"}
     </div>
     {isRinging && (
